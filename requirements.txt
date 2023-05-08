@@ -1,0 +1,7 @@
+pip install streamlit
+
+pip install lottie
+
+Python 3.11 or any version
+
+pip install mysql-connector-python
