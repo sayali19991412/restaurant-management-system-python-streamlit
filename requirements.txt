@@ -5,3 +5,7 @@ pip install lottie
 Python 3.11 or any version
 
 pip install mysql-connector-python
+
+To run the file :
+
+streamlit run view2.py
