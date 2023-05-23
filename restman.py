@@ -5,14 +5,23 @@ import pandas as pd
 def add_menu_item(mname, price):
     mydb = mysql.connector.connect(host="localhost", user="sayali", password="sayali", database="project")
     csr = mydb.cursor()
-    query = "insert into menu(mname,price) values(%s,%s)"
-    val = (mname, price)
-    csr.execute(query, val)
-    mydb.commit()
-    st.success("Menu Added Successfully")
-    csr.close()
-    mydb.close()
-
+    query1 = "select mname from menu"
+    csr.execute(query1)
+    result = csr.fetchall()
+    df = pd.DataFrame(result)
+    l = []
+    for i in range(len(df)):
+        l.append(df.iloc[i][0])
+    if mname not in l:
+        query = "insert into menu(mname,price) values(%s,%s)"
+        val = (mname, price)
+        csr.execute(query, val)
+        mydb.commit()
+        st.success("Menu Added Successfully")
+        csr.close()
+        mydb.close()
+    else:
+        st.error("Menu already exists")
 
 def update_menu(id, mname, price):
     mydb = mysql.connector.connect(host="localhost", user="sayali", password="sayali", database="project")
