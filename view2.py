@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import mysql.connector
 import restman as rm
 from streamlit_lottie import st_lottie
@@ -17,12 +16,14 @@ mydb = mysql.connector.connect(user='sayali', password='sayali', host='localhost
 csr = mydb.cursor()
 print("Connection Established")
 
+
 def load_lottieurl(url: str):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
 
+# show the login page for admin
 def show_login_page_admin():
     with loginSection:
         st.subheader("Admin Login")
@@ -31,7 +32,7 @@ def show_login_page_admin():
             password = st.text_input(label="", value="", placeholder="Enter password", type="password")
             st.button("Login", on_click=LoggedIn_Clicked, args=(userName, password))
 
-
+# show the login page for customer
 def show_login_page_cust():
     with loginSection:
         st.subheader("Customer Login")
@@ -41,6 +42,7 @@ def show_login_page_cust():
             st.button("Login", on_click=LoggedIn_ClickedCust, args=(userName, password))
 
 
+# show the role page which will show roles like admin , customer and new user reg
 def show_role():
     option = st.sidebar.selectbox(
         'Choose your role', ['----select----', 'Admin', 'Customer', 'New User'])
@@ -82,27 +84,41 @@ def LoggedIn_ClickedCust(userName, password):
         st.error("Invalid user name or password")
 
 
+# authenticate the username and password for admin
 def authenticate(userName, password):
     mydb = mysql.connector.connect(host="localhost", user="sayali", password="sayali", database="project")
     csr = mydb.cursor()
-    sql = "select password from admin where aid = %s"
+
+    sql = "select aid,password from admin where aid=%s"
     val = (userName,)
     csr.execute(sql, val)
-    passw = csr.fetchall()
-    if passw[0][0] == password:
+    res = csr.fetchall()
+    sqluser = 0
+    sqlpass = ""
+    if res != []:
+        sqluser = res[0][0]
+        sqlpass = res[0][1]
+    print(sqluser, sqlpass)
+    if int(sqluser) == int(userName) and password == sqlpass:
         return True
     else:
         return False
 
-
+# authenticate the username and password for customer
 def custauthenticate(userName, password):
     mydb = mysql.connector.connect(host="localhost", user="sayali", password="sayali", database="project")
     csr = mydb.cursor()
-    sql = "select password from cust where cid = %s"
+    sql = "select cid, password from cust where cid = %s"
     val = (userName,)
     csr.execute(sql, val)
-    passw = csr.fetchall()
-    if passw[0][0] == password:
+    res = csr.fetchall()
+    sqluser = 0
+    sqlpass = ""
+    if res != []:
+        sqluser = res[0][0]
+        sqlpass = res[0][1]
+    print(sqluser, sqlpass)
+    if int(sqluser) == int(userName) and password == sqlpass:
         return True
     else:
         return False
@@ -119,49 +135,51 @@ def LoggedOut_Clicked():
     st.session_state['cusloggedIn'] = False
 
 
+# after the admin is logged in successfully , it will display the admin functionalities
 def show_main_page():
     with mainSection:
         tab1, tab2, tab3, tab4 = st.tabs(['Add menu ➕', 'Update Menu 📝', 'Delete Menu ❌', 'Display Menu 💻'])
         with tab1:
-            lottie_url = "https://assets6.lottiefiles.com/packages/lf20_xuy0dq4j.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=150)
+            lottie_url1 = "https://assets6.lottiefiles.com/packages/lf20_xuy0dq4j.json"
+            lottie_json2 = load_lottieurl(lottie_url1)
+            st_lottie(lottie_json2, width=150)
             mname = st.text_input("Enter menu iTem").title()
             price = st.text_input("Price")
             menu_button = st.button("Add menu")
             if menu_button:
                 rm.add_menu_item(mname, price)
         with tab2:
-            lottie_url = "https://assets6.lottiefiles.com/private_files/lf30_rzhdjuoe.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=150)
+            lottie_url2 = "https://assets6.lottiefiles.com/private_files/lf30_rzhdjuoe.json"
+            lottie_json2 = load_lottieurl(lottie_url2)
+            st_lottie(lottie_json2, width=150)
             id = st.number_input("Enter MenuId to Update", min_value=1)
             name = st.text_input("Enter New Menu Name").title()
             price = st.text_input("Enter New Price")
             if st.button("Update Menu"):
                 rm.update_menu(id, name, price)
         with tab3:
-            lottie_url = "https://assets2.lottiefiles.com/packages/lf20_VmD8Sl.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=200)
+            lottie_url3 = "https://assets2.lottiefiles.com/packages/lf20_VmD8Sl.json"
+            lottie_json3 = load_lottieurl(lottie_url3)
+            st_lottie(lottie_json3, width=200)
             id = st.number_input("Enter Menu Id to delete ", min_value=1)
             if st.button("Delete"):
                 rm.delete_menu(id)
         with tab4:
-            lottie_url = "https://assets7.lottiefiles.com/packages/lf20_3GIrwN3h0z.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=200)
+            lottie_url4 = "https://assets7.lottiefiles.com/packages/lf20_3GIrwN3h0z.json"
+            lottie_json4 = load_lottieurl(lottie_url4)
+            st_lottie(lottie_json4, width=200)
             rm.display_menu()
 
-
+# display the customer functionalities
 def cust_page():
     with customerSection:
-        option = st.sidebar.selectbox('Select an option',['Reserve a Table', 'Order', 'Bill','Get Recommendations','Feedback'])
+        option = st.sidebar.selectbox('Select an option',
+                                      ['Reserve a Table', 'Order', 'Bill', 'Get Recommendations', 'Feedback'])
         if option == 'Reserve a Table':
             st.subheader("Reserve a table for Customer")
-            lottie_url = "https://assets5.lottiefiles.com/packages/lf20_29xm3xgf.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=200)
+            lottie_url6 = "https://assets5.lottiefiles.com/packages/lf20_29xm3xgf.json"
+            lottie_json6 = load_lottieurl(lottie_url6)
+            st_lottie(lottie_json6, width=200)
             csid = st.session_state['username']
             name1 = st.text_input("Enter Name")
             phone = st.text_input("Enter contact details")
@@ -173,20 +191,20 @@ def cust_page():
                 mydb.commit()
                 st.success("Your Table Has been Booked")
         if option == 'Order':
-            lottie_url = "https://assets4.lottiefiles.com/packages/lf20_jmd7aruv.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=200)
+            lottie_url7 = "https://assets4.lottiefiles.com/packages/lf20_jmd7aruv.json"
+            lottie_json7 = load_lottieurl(lottie_url7)
+            st_lottie(lottie_json7, width=200)
             rm.display_menu()
             rm.order(st.session_state['username'])
         if option == 'Bill':
-            lottie_url = "https://assets10.lottiefiles.com/packages/lf20_2K2lEIcWwq.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=200)
+            lottie_url8 = "https://assets10.lottiefiles.com/packages/lf20_2K2lEIcWwq.json"
+            lottie_json8 = load_lottieurl(lottie_url8)
+            st_lottie(lottie_json8, width=200)
             rm.bill(st.session_state['username'])
         if option == 'Get Recommendations':
-            lottie_url = "https://assets4.lottiefiles.com/packages/lf20_9ti102vm.json"
-            lottie_json = load_lottieurl(lottie_url)
-            st_lottie(lottie_json, width=200)
+            lottie_url9 = "https://assets4.lottiefiles.com/packages/lf20_9ti102vm.json"
+            lottie_json9 = load_lottieurl(lottie_url9)
+            st_lottie(lottie_json9, width=200)
             rm.recommendation()
 
         if option == 'Feedback':
@@ -208,6 +226,7 @@ def cust_page():
             if submit:
                 st.success('Thank You For Your Feedback !!! ')
 
+# display the new user registration page
 def newUser():
     with newUserSection:
         st.subheader("New User Registration")
@@ -220,7 +239,7 @@ def newUser():
             mydb.commit()
             st.success("User Created")
 
-
+# right after we run the program this page is displayed
 with headerSection:
     st.title("Restaurant Management System")
     if 'loggedIn' not in st.session_state and 'cusloggedIn' not in st.session_state and 'newuserId' not in st.session_state:
@@ -241,7 +260,5 @@ with headerSection:
 
         else:
             show_role()
-
-
 
 
